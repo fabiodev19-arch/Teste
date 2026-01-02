@@ -1,0 +1,8 @@
+
+{
+  "name": "MTA Forest Dashboard",
+  "description": "A high-contrast, neobrutalist fleet maintenance dashboard for MTA Forest operations.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

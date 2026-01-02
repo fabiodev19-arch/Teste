@@ -1,0 +1,8 @@
+
+export const DEFAULT_MECHANICS = [
+    "FABIO SILVA",
+    "JOSE SANTOS",
+    "MARCOS OLIVEIRA",
+    "RICARDO LIMA",
+    "ANTONIO FERREIRA"
+];
