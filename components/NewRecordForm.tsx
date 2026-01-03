@@ -4,17 +4,18 @@ import { X, Check, Wrench, Calendar, Clock, Users } from 'lucide-react';
 
 import { MaintenanceLog } from '../types';
 import { APP_VERSION } from '../config';
+import { supabase } from '../lib/supabase';
 
 interface NewRecordFormProps {
     onClose: () => void;
     onSubmit: (data: any) => void;
     initialCode?: string;
     initialData?: MaintenanceLog;
-    mechanics?: string[];
-    equipment?: string[];
+    mechanics: string[];
+    equipment: string[];
 }
 
-export const NewRecordForm: React.FC<NewRecordFormProps> = ({ onClose, onSubmit, initialCode, initialData, mechanics = [], equipment = [] }) => {
+export const NewRecordForm: React.FC<NewRecordFormProps> = ({ onClose, onSubmit, initialCode, initialData, mechanics, equipment }) => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     const currentTime = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -23,7 +24,7 @@ export const NewRecordForm: React.FC<NewRecordFormProps> = ({ onClose, onSubmit,
         code: initialData?.code || initialCode || 'MAN-',
         equipmentCode: initialData?.equipmentCode || '',
         title: initialData?.title || '',
-        status: initialData?.status || 'PENDENTE',
+        status: initialData?.status || 'AGUARDANDO PEÇA',
         startDate: initialData?.startDate || today,
         startTime: initialData?.startTime || currentTime,
         endDate: initialData?.endDate || today,
@@ -33,6 +34,42 @@ export const NewRecordForm: React.FC<NewRecordFormProps> = ({ onClose, onSubmit,
         observations: initialData?.observations || '',
         stopType: initialData?.stopType || 'PARADA MECÂNICA'
     });
+
+    // Strip the prefix (Title | StopType | [TotalHours H |] ) if present
+    React.useEffect(() => {
+        if (initialData && initialData.observations) {
+            const basePrefix = `${initialData.title} | ${initialData.stopType} | `;
+
+            // Try matching new format with hours first: "Title | Type | 5.00 H | "
+            if (initialData.observations.startsWith(basePrefix)) {
+                let remaining = initialData.observations.substring(basePrefix.length);
+
+                // Check if the next part is "Number H | "
+                // Regex to match "123.45 H | " at the start of 'remaining'
+                const hoursMatch = remaining.match(/^([\d.]+\sH\s\|\s)/);
+
+                if (hoursMatch) {
+                    // It's the new format, strip the hours part too
+                    setFormData(prev => ({
+                        ...prev,
+                        observations: remaining.substring(hoursMatch[0].length)
+                    }));
+                } else {
+                    // It's the old format (Title | Type | Obs), just strip the base prefix
+                    setFormData(prev => ({
+                        ...prev,
+                        observations: remaining
+                    }));
+                }
+            }
+        }
+    }, []);
+
+    React.useEffect(() => {
+        if (initialData) {
+            console.log('EDIT MODE - Initial Data:', initialData);
+        }
+    }, [initialData]);
 
     const calculateTotalHours = () => {
         if (!formData.startDate || !formData.startTime) {
@@ -96,42 +133,63 @@ export const NewRecordForm: React.FC<NewRecordFormProps> = ({ onClose, onSubmit,
         };
     }, [formData.startDate, formData.startTime, formData.endDate, formData.endTime, formData.status]);
 
-    // Reactive Observations Automation
-    React.useEffect(() => {
-        let newObs = formData.observations;
-        const totalTag = `TOTAL DE HORAS: ${formData.totalHours}H`;
-        const awaitingPartsTag = 'AGUARDANDO PEÇA';
+    // Reactive Observations Automation removed to keep fields clean on entry
+    // Data concatenation happens only on handleSubmit now.
 
-        // 1. Handle "AGUARDANDO PEÇA" tag
-        if (formData.status === 'AGUARDANDO PEÇA') {
-            if (!newObs.includes(awaitingPartsTag)) {
-                newObs = newObs ? `${newObs} | ${awaitingPartsTag}` : awaitingPartsTag;
-            }
-        }
-
-        // 2. Handle "TOTAL DE HORAS" tag
-        // Update if already present, OR add if status is COMPLETED
-        if (newObs.includes('TOTAL DE HORAS:')) {
-            newObs = newObs.replace(/TOTAL DE HORAS: [\d.]+H/, totalTag);
-        } else if (formData.status === 'CONCLUÍDO') {
-            newObs = newObs ? `${newObs} | ${totalTag}` : totalTag;
-        }
-
-        if (newObs.toUpperCase() !== formData.observations) {
-            setFormData(prev => ({ ...prev, observations: newObs.toUpperCase() }));
-        }
-    }, [formData.status, formData.totalHours]);
-
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (initialData) {
-            const confirmed = window.confirm("Deseja realmente atualizar o registro?");
-            if (!confirmed) return;
-        }
+        try {
+            // Sanitize data for Supabase
+            const dataToSave = {
+                code: formData.code,
+                equipment_code: formData.equipmentCode,
+                title: formData.title,
+                status: formData.status,
+                mechanic: formData.mechanic || null,
+                start_date: formData.startDate,
+                start_time: formData.startTime || null,
+                end_date: formData.endDate || null,
+                end_time: formData.endTime || null,
+                total_hours: formData.totalHours,
+                observations: `${formData.title} | ${formData.stopType} | ${formData.totalHours} H | ${formData.observations || ''}`,
+                stop_type: formData.stopType
+            };
 
-        onSubmit(formData);
-        onClose();
+            console.log('Submitting data:', dataToSave);
+            console.log('Update target ID:', initialData?.id);
+
+
+            let error;
+
+            if (initialData?.id) {
+                // Update existing
+                const { error: updateError } = await supabase
+                    .from('maintenance_logs')
+                    .update(dataToSave)
+                    .eq('id', initialData.id);
+                error = updateError;
+            } else {
+                // Insert new
+                const { error: insertError } = await supabase
+                    .from('maintenance_logs')
+                    .insert([dataToSave]);
+                error = insertError;
+            }
+
+            if (error) {
+                console.error('Supabase Error:', error);
+                alert(`Erro ao salvar: ${error.message}`);
+                return;
+            }
+
+            // Success
+            onSubmit(formData);
+            onClose();
+        } catch (err: any) {
+            console.error('Unexpected error:', err);
+            alert(`Erro inesperado: ${err.message || 'Desconhecido'}`);
+        }
     };
 
     const isCompleted = formData.status === 'CONCLUÍDO';

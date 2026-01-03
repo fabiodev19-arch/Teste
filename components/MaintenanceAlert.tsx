@@ -14,7 +14,7 @@ export const MaintenanceAlert: React.FC<MaintenanceAlertProps> = ({ logs, onSele
     const checkAlerts = () => {
       const now = new Date();
       const qualifyingLogs = logs.filter(log => {
-        if (log.status !== MaintenanceStatus.AWAITING_PARTS || !log.startDate || !log.startTime) {
+        if (log.status === 'CONCLUÍDO' || !log.startDate || !log.startTime) {
           return false;
         }
 

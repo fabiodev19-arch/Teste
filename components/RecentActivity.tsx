@@ -60,8 +60,7 @@ export const RecentActivity: React.FC<RecentActivityProps> = ({ logs, onSelectLo
 export const StatusBadge: React.FC<{ status: MaintenanceStatus }> = ({ status }) => {
   const styles = {
     [MaintenanceStatus.COMPLETED]: 'bg-green-100 text-green-700 border-green-700',
-    [MaintenanceStatus.AWAITING_PARTS]: 'bg-red-100 text-red-700 border-red-700',
-    [MaintenanceStatus.YESTERDAY]: 'bg-gray-100 text-gray-700 border-gray-700',
+    [MaintenanceStatus.AWAITING_PARTS]: 'bg-white text-red-600 border-red-600',
   };
 
   return (

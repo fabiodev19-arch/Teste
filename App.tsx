@@ -7,42 +7,9 @@ import { Logs } from './components/Logs';
 import { Config } from './components/Config';
 import { NewRecordForm } from './components/NewRecordForm';
 import { RecordDetails } from './components/RecordDetails';
-import { User, MaintenanceLog, MaintenanceStatus } from './types';
+import { User, MaintenanceLog, MaintenanceStatus, UserRole } from './types';
 
-const INITIAL_LOGS: MaintenanceLog[] = [
-  {
-    id: '1',
-    code: 'EXCALIBUR-001 [EQ-01]',
-    equipmentCode: 'EQ-01',
-    title: 'Troca de Óleo',
-    time: '10:30',
-    date: '2026-01-01',
-    startDate: '2026-01-01',
-    startTime: '10:30',
-    status: MaintenanceStatus.COMPLETED
-  },
-  {
-    id: '2',
-    code: 'EXCALIBUR-005 [EQ-03]',
-    equipmentCode: 'EQ-03',
-    title: 'Manutenção Hidráulica',
-    time: '08:15',
-    startDate: '2026-01-01',
-    startTime: '08:15',
-    status: MaintenanceStatus.AWAITING_PARTS
-  },
-  {
-    id: '3',
-    code: 'EXCALIBUR-008 [CM-05]',
-    equipmentCode: 'CM-05',
-    title: 'Inspeção Pneus',
-    time: '16:45',
-    date: '2023-10-14',
-    startDate: '2023-10-14',
-    startTime: '16:45',
-    status: MaintenanceStatus.AWAITING_PARTS
-  }
-];
+const INITIAL_LOGS: MaintenanceLog[] = [];
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -55,6 +22,12 @@ const App: React.FC = () => {
       if (session) {
         await fetchProfile(session.user.id, session.user.email || '');
       }
+      // Load logs regardless of auth for now, or maybe only if auth? User asked to persist.
+      // Assuming public read for now as per schema policy, or protected.
+      // Better to fetch logs here.
+      // Better to fetch logs here.
+      await fetchLogs();
+      await fetchAuxData();
       setLoading(false);
     };
 
@@ -82,7 +55,10 @@ const App: React.FC = () => {
         .eq('id', userId)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // If profile doesn't exist, just set default
+        console.log('Profile fetch error (optimistic defaults used):', error.message);
+      }
 
       setUser({
         username: email,
@@ -93,14 +69,59 @@ const App: React.FC = () => {
     }
   };
 
+  const fetchLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('maintenance_logs')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const mappedLogs: MaintenanceLog[] = (data || []).map((item: any) => ({
+        id: item.id,
+        code: item.code,
+        equipmentCode: item.equipment_code,
+        title: item.title,
+        time: item.start_time, // Display time usually start time
+        date: item.start_date,
+        startDate: item.start_date,
+        startTime: item.start_time,
+        endDate: item.end_date,
+        endTime: item.end_time,
+        status: item.status as MaintenanceStatus,
+        mechanic: item.mechanic,
+        totalHours: item.total_hours,
+        observations: item.observations,
+        stopType: item.stop_type
+      }));
+
+      setLogs(mappedLogs);
+    } catch (error) {
+      console.error('Error fetching logs:', error);
+    }
+  };
+
+  const fetchAuxData = async () => {
+    try {
+      const { data: mechData } = await supabase.from('mechanics').select('name').eq('active', true);
+      const { data: eqData } = await supabase.from('equipments').select('code').eq('active', true);
+
+      if (mechData) setMechanics(mechData.map(m => m.name));
+      if (eqData) setEquipment(eqData.map(e => e.code));
+    } catch (error) {
+      console.error('Error fetching aux data:', error);
+    }
+  };
+
   const [currentTab, setCurrentTab] = useState<'inicio' | 'logs' | 'config'>('inicio');
   const [logFilter, setLogFilter] = useState<MaintenanceStatus | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [logs, setLogs] = useState<MaintenanceLog[]>(INITIAL_LOGS);
   const [selectedLog, setSelectedLog] = useState<MaintenanceLog | null>(null);
   const [editingLog, setEditingLog] = useState<MaintenanceLog | null>(null);
-  const [mechanics, setMechanics] = useState<string[]>(['MECÂNICO 01', 'MECÂNICO 02']);
-  const [equipment, setEquipment] = useState<string[]>(['EQ-01', 'EQ-02', 'CM-05']);
+  const [mechanics, setMechanics] = useState<string[]>([]);
+  const [equipment, setEquipment] = useState<string[]>([]);
 
   const handleLogin = (u: User) => {
     setUser(u);
@@ -118,65 +139,53 @@ const App: React.FC = () => {
     setCurrentTab('logs');
   };
 
-  const handleSaveLog = (data: any) => {
-    if (editingLog) {
-      // Update existing log
-      const updatedLogs = logs.map(log =>
-        log.id === editingLog.id ? {
-          ...log,
-          ...data,
-          status: data.status as MaintenanceStatus,
-          stopType: data.stopType,
-          time: data.startTime // Update display time too
-        } : log
-      );
-      setLogs(updatedLogs);
-      setEditingLog(null);
-    } else {
-      // Add new log
-      const newLog: MaintenanceLog = {
-        id: Date.now().toString(),
-        code: data.code,
-        equipmentCode: data.equipmentCode,
-        title: data.title,
-        time: data.startTime,
-        startDate: data.startDate,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        status: data.status as MaintenanceStatus,
-        mechanic: data.mechanic,
-        endDate: data.endDate,
-        totalHours: data.totalHours,
-        observations: data.observations,
-        stopType: data.stopType
-      };
-      setLogs([newLog, ...logs]);
-    }
+  const handleSaveLog = async (data: any) => {
+    // NewRecordForm already handles the insert/upsert to Supabase
+    // We just need to refresh the list
+    await fetchLogs();
     setShowForm(false);
+    setEditingLog(null);
   };
 
   const handleEditClick = (log: MaintenanceLog) => {
-    setSelectedLog(null); // Close details
-    setEditingLog(log);   // Set log to edit
-    setShowForm(true);    // Open form
+    setSelectedLog(null);
+    setEditingLog(log);
+    setShowForm(true);
   };
 
   const getNextId = () => {
     const maxNum = logs.reduce((max, log) => {
+      // Extract number from MAN-XXX
       const match = log.code.match(/MAN-(\d+)/);
       if (match) {
         const num = parseInt(match[1]);
         return num > max ? num : max;
       }
+      // Also check standard integer IDs if migration old data
       return max;
     }, 0);
     return `MAN-${(maxNum + 1).toString().padStart(3, '0')}`;
   };
 
-  const handleDeleteLog = (id: string) => {
-    setLogs(logs.filter(log => log.id !== id));
-    if (selectedLog?.id === id) {
-      setSelectedLog(null);
+  const handleDeleteLog = async (id: string) => {
+    if (!window.confirm('Tem certeza que deseja excluir este registro?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('maintenance_logs')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      await fetchLogs();
+
+      if (selectedLog?.id === id) {
+        setSelectedLog(null);
+      }
+    } catch (error) {
+      console.error('Error deleting log:', error);
+      alert('Erro ao excluir registro.');
     }
   };
 
@@ -234,13 +243,12 @@ const App: React.FC = () => {
       )}
       {currentTab === 'config' && user.role === 'ADMIN' && (
         <Config
-          mechanics={mechanics}
-          onUpdateMechanics={setMechanics}
-          equipment={equipment}
-          onUpdateEquipment={setEquipment}
           onSave={() => {
             // Give time for the visual feedback in Config.tsx
-            setTimeout(() => setCurrentTab('inicio'), 1000);
+            setTimeout(async () => {
+              await fetchAuxData(); // Refresh data after config changes
+              setCurrentTab('inicio');
+            }, 1000);
           }}
         />
       )}

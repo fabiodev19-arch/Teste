@@ -1,8 +1,7 @@
 
 export enum MaintenanceStatus {
   COMPLETED = 'CONCLUÍDO',
-  AWAITING_PARTS = 'AGUARDANDO PEÇA',
-  YESTERDAY = 'ONTEM'
+  AWAITING_PARTS = 'AGUARDANDO PEÇA'
 }
 
 export interface MaintenanceLog {

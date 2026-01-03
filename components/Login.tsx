@@ -101,7 +101,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 className="w-full brutal-border p-4 font-bold text-lg focus:outline-none focus:bg-gray-50 uppercase"
-                                placeholder="vagner@excalibur.com"
+                                placeholder=""
+                                autoComplete="off"
                                 required
                             />
                         </div>
@@ -119,7 +120,8 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full brutal-border p-4 font-bold text-lg focus:outline-none focus:bg-gray-50 uppercase"
-                                placeholder="••••••••"
+                                placeholder=""
+                                autoComplete="new-password"
                                 required
                             />
                         </div>
