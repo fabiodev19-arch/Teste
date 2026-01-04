@@ -126,20 +126,27 @@ const App: React.FC = () => {
   // Browser history navigation system
   useEffect(() => {
     // Push initial state to prevent back button from exiting app
-    window.history.pushState({ page: 'dashboard' }, '', '');
+    window.history.pushState({ page: 'dashboard', locked: true }, '', '');
 
     const handlePopState = () => {
       // Close any open modals/screens based on current state
       if (showForm) {
         setShowForm(false);
         setEditingLog(null);
+        // Re-push state to maintain history
+        window.history.pushState({ page: 'dashboard', locked: true }, '', '');
       } else if (selectedLog) {
         setSelectedLog(null);
+        // Re-push state to maintain history
+        window.history.pushState({ page: 'dashboard', locked: true }, '', '');
       } else if (currentTab !== 'inicio') {
         setCurrentTab('inicio');
+        // Re-push state to maintain history
+        window.history.pushState({ page: 'dashboard', locked: true }, '', '');
       } else {
-        // If already on dashboard, push state again to prevent exit
-        window.history.pushState({ page: 'dashboard' }, '', '');
+        // If already on dashboard, ALWAYS push state again to prevent exit
+        // This creates an infinite loop that keeps user in the app
+        window.history.pushState({ page: 'dashboard', locked: true }, '', '');
       }
     };
 
