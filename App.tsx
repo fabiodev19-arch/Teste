@@ -123,6 +123,33 @@ const App: React.FC = () => {
   const [mechanics, setMechanics] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
 
+  // Browser history navigation system
+  useEffect(() => {
+    // Push initial state to prevent back button from exiting app
+    window.history.pushState({ page: 'dashboard' }, '', '');
+
+    const handlePopState = () => {
+      // Close any open modals/screens based on current state
+      if (showForm) {
+        setShowForm(false);
+        setEditingLog(null);
+      } else if (selectedLog) {
+        setSelectedLog(null);
+      } else if (currentTab !== 'inicio') {
+        setCurrentTab('inicio');
+      } else {
+        // If already on dashboard, push state again to prevent exit
+        window.history.pushState({ page: 'dashboard' }, '', '');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [showForm, selectedLog, currentTab]);
+
   const handleLogin = (u: User) => {
     setUser(u);
   };
@@ -137,6 +164,7 @@ const App: React.FC = () => {
   const handleFilterClick = (status: MaintenanceStatus) => {
     setLogFilter(status);
     setCurrentTab('logs');
+    window.history.pushState({ page: 'logs' }, '', '');
   };
 
   const handleSaveLog = async (data: any) => {
@@ -151,6 +179,7 @@ const App: React.FC = () => {
     setSelectedLog(null);
     setEditingLog(log);
     setShowForm(true);
+    window.history.pushState({ page: 'form' }, '', '');
   };
 
   const getNextId = () => {
@@ -216,12 +245,17 @@ const App: React.FC = () => {
           onNewRecord={() => {
             setEditingLog(null);
             setShowForm(true);
+            window.history.pushState({ page: 'form' }, '', '');
           }}
           logs={logs}
-          onSelectLog={setSelectedLog}
+          onSelectLog={(log) => {
+            setSelectedLog(log);
+            window.history.pushState({ page: 'details' }, '', '');
+          }}
           onSeeAll={() => {
             setLogFilter(null);
             setCurrentTab('logs');
+            window.history.pushState({ page: 'logs' }, '', '');
           }}
           onFilterPending={() => handleFilterClick(MaintenanceStatus.AWAITING_PARTS)}
           onFilterCompleted={() => handleFilterClick(MaintenanceStatus.COMPLETED)}
@@ -230,7 +264,10 @@ const App: React.FC = () => {
       {currentTab === 'logs' && (
         <Logs
           logs={logs}
-          onSelectLog={setSelectedLog}
+          onSelectLog={(log) => {
+            setSelectedLog(log);
+            window.history.pushState({ page: 'details' }, '', '');
+          }}
           activeFilter={logFilter}
           onClearFilter={() => setLogFilter(null)}
           onClose={() => {
