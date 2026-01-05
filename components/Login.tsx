@@ -157,7 +157,7 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                 {/* Footer info */}
                 <div className="text-center pt-8">
                     <div className="inline-block bg-white brutal-border px-3 py-1 text-black font-mono text-[10px] font-black italic mt-4">
-                        VERSÃO 1.0.42 | PROTOCOLO EXCALIBUR
+                        VERSÃO 1.0.42 | PROTOCOLO PÁGINA DE TESTE
                     </div>
                 </div>
             </div>

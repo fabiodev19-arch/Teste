@@ -198,11 +198,8 @@ export const NewRecordForm: React.FC<NewRecordFormProps> = ({ onClose, onSubmit,
         <div className="fixed inset-0 max-w-md mx-auto left-0 right-0 bg-white z-[60] flex flex-col animate-in slide-in-from-bottom duration-300 border-x-4 border-black">
             <header className="bg-excalibur border-b-4 border-black text-white p-4 flex justify-between items-center sticky top-0 z-50">
                 <div className="flex items-center gap-2">
-                    <div className="bg-white brutal-border-sm p-0.5 overflow-hidden w-8 h-8 flex items-center justify-center">
-                        <img src="/logo-excalibur.jpg" alt="Logo" className="w-full h-auto" />
-                    </div>
                     <div className="flex flex-col">
-                        <h2 className="text-xl font-bold tracking-tighter uppercase italic leading-none">EXCALIBUR</h2>
+                        <h2 className="text-xl font-bold tracking-tighter uppercase italic leading-none">Página de teste</h2>
                         <span className="font-mono text-[9px] uppercase font-bold opacity-70 tracking-widest">{initialData ? 'EDITAR' : 'NOVO'} REGISTRO</span>
                     </div>
                 </div>

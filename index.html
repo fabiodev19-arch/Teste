@@ -1,56 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-    <title>EXCALIBUR - Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              excalibur: {
-                DEFAULT: '#eb821c',
-                dark: '#b85c14',
-                light: '#f3a65a'
-              },
-              brutal: {
-                black: '#000000',
-                white: '#FFFFFF',
-                yellow: '#f8d57e',
-                red: '#ff5c5c',
-                green: '#b0ffc1'
-              }
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Página de teste - Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            excalibur: {
+              DEFAULT: '#eb821c',
+              dark: '#b85c14',
+              light: '#f3a65a'
             },
-            fontFamily: {
-              sans: ['Space Grotesk', 'sans-serif'],
-              mono: ['JetBrains Mono', 'monospace'],
-            },
-            boxShadow: {
-              'brutal': '4px 4px 0px 0px rgba(0,0,0,1)',
-              'brutal-sm': '2px 2px 0px 0px rgba(0,0,0,1)',
+            brutal: {
+              black: '#000000',
+              white: '#FFFFFF',
+              yellow: '#f8d57e',
+              red: '#ff5c5c',
+              green: '#b0ffc1'
             }
+          },
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          boxShadow: {
+            'brutal': '4px 4px 0px 0px rgba(0,0,0,1)',
+            'brutal-sm': '2px 2px 0px 0px rgba(0,0,0,1)',
           }
         }
       }
-    </script>
-    <style>
-      body {
-        background-color: #f0f2f0;
-      }
-      .brutal-border {
-        border: 4px solid #000000;
-      }
-      .brutal-border-sm {
-        border: 2px solid #000000;
-      }
-    </style>
+    }
+  </script>
+  <style>
+    body {
+      background-color: #f0f2f0;
+    }
+
+    .brutal-border {
+      border: 4px solid #000000;
+    }
+
+    .brutal-border-sm {
+      border: 2px solid #000000;
+    }
+  </style>
   <script type="importmap">
 {
   "imports": {
@@ -61,10 +65,12 @@
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
+  <link rel="stylesheet" href="/index.css">
 </head>
-  <body>
-    <div id="root"></div>
+
+<body>
+  <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
+
 </html>

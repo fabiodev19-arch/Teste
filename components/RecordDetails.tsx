@@ -114,7 +114,7 @@ export const RecordDetails: React.FC<RecordDetailsProps> = ({ log, onClose, onEd
                             </div>
                         )}
                         <p className="font-mono text-[10px] text-gray-500 leading-relaxed uppercase italic">
-                            ESTE REGISTRO FOI GERADO VIA DASHBOARD EXCALIBUR. TODOS OS CAMPOS FORAM VALIDADOS PELO PROTOCOLO DE SEGURANÇA V1.
+                            ESTE REGISTRO FOI GERADO VIA DASHBOARD PÁGINA DE TESTE. TODOS OS CAMPOS FORAM VALIDADOS PELO PROTOCOLO DE SEGURANÇA V1.
                         </p>
                     </div>
                 </div>

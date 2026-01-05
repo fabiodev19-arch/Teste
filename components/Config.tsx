@@ -10,7 +10,7 @@ export const Config: React.FC<ConfigProps> = ({ onSave }) => {
   const [mechanics, setMechanics] = useState<string[]>([]);
   const [equipment, setEquipment] = useState<string[]>([]);
   const [operator, setOperator] = useState('ADMIN FOREST');
-  const [unit, setUnit] = useState('EXCALIBUR-NORTE');
+  const [unit, setUnit] = useState('UNIDADE-NORTE');
   const [newMechanic, setNewMechanic] = useState('');
   const [newEquipment, setNewEquipment] = useState('');
   const [isSaved, setIsSaved] = useState(false);
@@ -198,9 +198,9 @@ export const Config: React.FC<ConfigProps> = ({ onSave }) => {
             onChange={(e) => setUnit(e.target.value)}
             className="w-full brutal-border p-3 font-bold text-lg bg-white appearance-none focus:outline-none uppercase"
           >
-            <option value="EXCALIBUR-NORTE">EXCALIBUR-NORTE</option>
-            <option value="EXCALIBUR-SUL">EXCALIBUR-SUL</option>
-            <option value="EXCALIBUR-ESTE">EXCALIBUR-ESTE</option>
+            <option value="UNIDADE-NORTE">UNIDADE-NORTE</option>
+            <option value="UNIDADE-SUL">UNIDADE-SUL</option>
+            <option value="UNIDADE-ESTE">UNIDADE-ESTE</option>
           </select>
         </div>
 
